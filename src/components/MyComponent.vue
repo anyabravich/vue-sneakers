@@ -1,4 +1,4 @@
 <template>
-  <p>Текст моего компонента</p>
-  <button>Открыть модальное окно</button>
+  <h1>0</h1>
+  <button>+</button>
 </template>
