@@ -3,7 +3,7 @@ import { ref } from 'vue'
 
 defineProps({
   title: String,
-  img: String,
+  imageUrl: String,
   price: Number
 })
 
@@ -21,7 +21,7 @@ const onClick = () => {
     <div @click="onClick" class="absolute top-8 left-8">
       <img :src="isLiked ? '/like-1.svg' : '/like-2.svg'" alt="Favorite" />
     </div>
-    <img :src="img" class="w-full" alt="Sneaker" />
+    <img :src="imageUrl" class="w-full" alt="Sneaker" />
     <p>{{ title }}</p>
     <div class="flex justify-between mt-5">
       <div class="flex flex-col gap-2">
