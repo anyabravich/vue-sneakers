@@ -1,11 +1,9 @@
 <script setup>
-import MyComponent from './components/MyComponent.vue'
+import Drawer from './components/Drawer.vue'
+import HomePage from './pages/Home.vue'
 </script>
 
 <template>
-  <MyComponent title="Кроссовки Nike" />
-  <MyComponent title="Кроссовки Adidas" />
-  <MyComponent title="Кроссовки Reebok" />
+  <!-- <Drawer /> -->
+  <HomePage />
 </template>
-
-<style scoped></style>
