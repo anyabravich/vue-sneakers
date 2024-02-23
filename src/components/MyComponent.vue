@@ -1,4 +1,9 @@
+<script setup>
+defineProps({
+  title: String
+})
+</script>
+
 <template>
-  <h1>0</h1>
-  <button>+</button>
+  <h1 class="text-3xl font-bold underline">{{ title }}</h1>
 </template>
