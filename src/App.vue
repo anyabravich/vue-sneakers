@@ -1,17 +1,12 @@
 <script setup lang="ts">
 import { ref, provide, watch, computed, Ref } from 'vue'
-
-import Header from './components/Header/Header.vue'
+import Header from './components/Header.vue'
 import Drawer from './components/Drawer.vue'
 
 interface Item {
   name: string
   price: number
   isAdded: boolean
-}
-
-interface CartItem extends Item {
-  isAdded: true
 }
 
 const cart: Ref<Item[]> = ref([])
@@ -29,14 +24,17 @@ const openDrawer = () => {
   drawerOpen.value = true
 }
 
-const addToCart = (item) => {
+const addToCart = (item: Item) => {
   cart.value.push(item)
   item.isAdded = true
 }
 
-const removeFromCart = (item) => {
-  cart.value.splice(cart.value.indexOf(item), 1)
-  item.isAdded = false
+const removeFromCart = (item: Item) => {
+  const index = cart.value.findIndex((cartItem) => cartItem === item)
+  if (index !== -1) {
+    cart.value.splice(index, 1)
+    item.isAdded = false
+  }
 }
 
 watch(
@@ -54,8 +52,6 @@ provide('cart', {
   addToCart,
   removeFromCart
 })
-
-/* Корзина (END) */
 </script>
 
 <template>

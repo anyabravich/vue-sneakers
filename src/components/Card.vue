@@ -1,4 +1,4 @@
-<script setup>
+<script setup lang="ts">
 defineProps({
   id: Number,
   title: String,
@@ -6,8 +6,8 @@ defineProps({
   price: Number,
   isFavorite: Boolean,
   isAdded: Boolean,
-  onClickFavorite: Function,
-  onClickAdd: Function
+  onClickFavorite: Function as () => void,
+  onClickAdd: Function as () => void
 })
 </script>
 
