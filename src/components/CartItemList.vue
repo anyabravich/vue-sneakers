@@ -2,7 +2,20 @@
 import { inject } from 'vue'
 import CartItem from './CartItem.vue'
 
-const { cart, removeFromCart } = inject('cart')
+interface CartItem {
+  id: number
+  title: string
+  price: number
+  imageUrl: string
+}
+
+const cartContext = inject<{ cart: CartItem[]; removeFromCart: (item: CartItem) => void }>('cart')
+
+if (!cartContext) {
+  throw new Error('Unable to inject cart context')
+}
+
+const { cart, removeFromCart } = cartContext
 </script>
 
 <template>
@@ -14,6 +27,7 @@ const { cart, removeFromCart } = inject('cart')
       :price="item.price"
       :image-url="item.imageUrl"
       @on-click-remove="() => removeFromCart(item)"
+      :id="item.id"
     />
   </div>
 </template>

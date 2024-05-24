@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import axios from 'axios'
-import { ref, computed, inject } from 'vue'
+import { ref, Ref, computed, inject } from 'vue'
 
 const apiUrl = ref(import.meta.env.VITE_APP_API_URL).value
 
@@ -13,7 +13,14 @@ const props = defineProps({
   vatPrice: Number
 })
 
-const { cart, closeDrawer } = inject('cart')
+interface Item {
+  id: number
+  title: string
+  price: number
+  imageUrl: string
+}
+
+const { cart } = inject('cart') as { cart: Ref<Item[]> }
 
 const isCreating = ref(false)
 const orderId = ref(null)
@@ -23,7 +30,7 @@ const createOrder = async () => {
     isCreating.value = true
     const { data } = await axios.post(`${apiUrl}/orders`, {
       items: cart.value,
-      totalPrice: props.totalPrice.value
+      totalPrice: props.totalPrice?.valueOf // Add null check here
     })
 
     cart.value = []
