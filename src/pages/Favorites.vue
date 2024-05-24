@@ -2,17 +2,23 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 
+const apiUrl = ref(import.meta.env.VITE_APP_API_URL).value
 import CardList from '../components/CardList.vue'
 
 const favorites = ref([])
 
+interface Sneaker {
+  id: number
+  title: string
+  imageUrl: string
+  price: number
+}
+
 onMounted(async () => {
   try {
-    const { data } = await axios.get(
-      'https://bf9e6611adb398a1.mokky.dev/favorites?_relations=sneakers'
-    )
+    const { data } = await axios.get(`${apiUrl}/favorites?_relations=sneakers`)
 
-    favorites.value = data.map((obj) => obj.sneaker)
+    favorites.value = data.map((obj: { sneaker: Sneaker }) => obj.sneaker)
   } catch (err) {
     console.log(err)
   }
