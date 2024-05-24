@@ -1,11 +1,21 @@
-<script setup>
-import { ref, provide, watch, computed } from 'vue'
+<script setup lang="ts">
+import { ref, provide, watch, computed, Ref } from 'vue'
 
-import Header from './components/Header.vue'
+import Header from './components/Header/Header.vue'
 import Drawer from './components/Drawer.vue'
 
-/* Корзина (START) */
-const cart = ref([])
+interface Item {
+  name: string
+  price: number
+  isAdded: boolean
+}
+
+interface CartItem extends Item {
+  isAdded: true
+}
+
+const cart: Ref<Item[]> = ref([])
+
 const drawerOpen = ref(false)
 
 const totalPrice = computed(() => cart.value.reduce((acc, item) => acc + item.price, 0))
