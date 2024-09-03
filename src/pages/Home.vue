@@ -5,17 +5,41 @@ import debounce from 'lodash.debounce'
 import { inject } from 'vue'
 import CardList from '../components/CardList.vue'
 
-const apiUrl = ref(import.meta.env.VITE_APP_API_URL).value
-const { cart, addToCart, removeFromCart } = inject('cart')
+interface Item {
+  id: number
+  title: string
+  imageUrl: string
+  price: number
+  isFavorite: boolean
+  favoriteId: number | null
+  isAdded: boolean
+}
 
-const items = ref([])
+interface Filters {
+  sortBy: string
+  searchQuery: string
+}
 
-const filters = reactive({
+const apiUrl = ref<string>(import.meta.env.VITE_APP_API_URL)
+
+const { cart, addToCart, removeFromCart } = inject<{
+  cart: { value: Item[] }
+  addToCart: (item: Item) => void
+  removeFromCart: (item: Item) => void
+}>('cart') || {
+  cart: ref<Item[]>([]),
+  addToCart: () => {},
+  removeFromCart: () => {}
+}
+
+const items = ref<Item[]>([])
+
+const filters = reactive<Filters>({
   sortBy: 'title',
   searchQuery: ''
 })
 
-const onClickAddPlus = (item) => {
+const onClickAddPlus = (item: Item) => {
   if (!item.isAdded) {
     addToCart(item)
   } else {
@@ -23,80 +47,69 @@ const onClickAddPlus = (item) => {
   }
 }
 
-const onChangeSelect = (event) => {
-  filters.sortBy = event.target.value
+const onChangeSelect = (event: Event) => {
+  filters.sortBy = (event.target as HTMLSelectElement).value
 }
 
-const onChangeSearchInput = debounce((event) => {
-  filters.searchQuery = event.target.value
+const onChangeSearchInput = debounce((event: Event) => {
+  filters.searchQuery = (event.target as HTMLInputElement).value
 }, 300)
 
-const addToFavorite = async (item) => {
+const addToFavorite = async (item: Item) => {
   try {
     if (!item.isFavorite) {
-      const obj = {
-        sneaker_id: item.id
-      }
+      const obj = { sneaker_id: item.id }
 
       item.isFavorite = true
 
-      const { data } = await axios.post(`${apiUrl}/favorites`, obj)
+      const { data } = await axios.post<{ id: number }>(`${apiUrl.value}/favorites`, obj)
 
       item.favoriteId = data.id
     } else {
-      item.isFavorite = false
-      await axios.delete(`${apiUrl}/favorites/${item.favoriteId}`)
-      item.favoriteId = null
+      if (item.favoriteId !== null) {
+        item.isFavorite = false
+        await axios.delete(`${apiUrl.value}/favorites/${item.favoriteId}`)
+        item.favoriteId = null
+      }
     }
   } catch (err) {
-    console.log(err)
+    console.error('Error adding/removing favorite:', err)
   }
 }
 
 const fetchFavorites = async () => {
   try {
-    const { data: favorites } = await axios.get(`${apiUrl}/favorites`)
+    const { data: favorites } = await axios.get<{ sneaker_id: number; id: number }[]>(
+      `${apiUrl.value}/favorites`
+    )
 
     items.value = items.value.map((item) => {
-      const favorite = favorites.find((favorite) => favorite.sneaker_id === item.id)
+      const favorite = favorites.find((fav) => fav.sneaker_id === item.id)
 
-      if (!favorite) {
-        return item
-      }
-
-      return {
-        ...item,
-        isFavorite: true,
-        favoriteId: favorite.id
-      }
+      return favorite ? { ...item, isFavorite: true, favoriteId: favorite.id } : item
     })
   } catch (err) {
-    console.log(err)
+    console.error('Error fetching favorites:', err)
   }
 }
 
 const fetchItems = async () => {
   try {
-    const params = {
-      sortBy: filters.sortBy
-    }
-
-    if (filters.searchQuery) {
-      params.title = `*${filters.searchQuery}*`
-    }
-
-    const { data } = await axios.get(`${apiUrl}/sneakers`, {
-      params
-    })
+    const { data } = await axios.get<
+      { id: number; title: string; imageUrl: string; price: number }[]
+    >(`${apiUrl.value}/sneakers`)
 
     items.value = data.map((obj) => ({
-      ...obj,
+      id: obj.id,
+      title: obj.title,
+      imageUrl: obj.imageUrl,
+      price: obj.price,
       isFavorite: false,
       favoriteId: null,
       isAdded: false
     }))
   } catch (err) {
-    console.log(err)
+    console.error('Error fetching items:', err)
   }
 }
 
@@ -113,18 +126,25 @@ onMounted(async () => {
   }))
 })
 
-watch(cart, () => {
+watch(cart, (newCart) => {
+  localStorage.setItem('cart', JSON.stringify(newCart))
   items.value = items.value.map((item) => ({
     ...item,
-    isAdded: false
+    isAdded: (cart.value as Item[]).some((cartItem) => cartItem.id === item.id)
   }))
 })
 
-watch(filters, fetchItems)
+watch(cart, (newCart) => {
+  localStorage.setItem('cart', JSON.stringify(newCart))
+  items.value = items.value.map((item) => ({
+    ...item, // spread the existing properties
+    isAdded: (cart.value as Item[]).some((cartItem) => cartItem.id === item.id)
+  }))
+})
 </script>
 
 <template>
-  <div class="flex justify-between items-center">
+  <div class="flex flex-wrap justify-between items-center">
     <h2 class="text-3xl font-bold mb-8">Все кроссовки</h2>
 
     <div class="flex gap-4">
